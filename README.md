@@ -23,7 +23,7 @@ Este repositorio contiene la API RESTful desarrollada en **Node.js con TypeScrip
 ### 1. Variables de Entorno (.env)
 El proyecto requiere un archivo `.env` en la raíz para funcionar. Si no existe, créalo con la siguiente configuración estándar:
 
-```properties
+
 # Servidor
 PORT=3000
 
