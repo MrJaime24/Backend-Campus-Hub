@@ -1,50 +1,194 @@
-Markdown# Backend API - Proyecto Integrado
+Markdown
+# 📘 Backend API - Proyecto Integrado
 
-Este repositorio contiene el servidor Backend (Node.js + TypeScript) para la gestión del Proyecto Integrado. El sistema administra usuarios, roles, centros educativos y proyectos, proporcionando una API RESTful segura.
-
-## 🛠️ Tecnologías
-
-* **Runtime:** Node.js
-* **Lenguaje:** TypeScript
-* **Base de Datos:** MySQL / MariaDB
-* **ORM/Query Builder:** MySQL2 (Consultas SQL directas)
-* **Autenticación:** JWT (JSON Web Tokens)
-* **Seguridad:** bcryptjs (Hashing de contraseñas)
+Este repositorio contiene la API RESTful desarrollada en **Node.js con TypeScript** para la gestión integral del Proyecto. El sistema administra usuarios, control de acceso basado en roles (RBAC), gestión de centros educativos y proyectos colaborativos.
 
 ---
 
-## 🚀 Instalación y Puesta en Marcha
+## 🛠️ Stack Tecnológico
 
-### 1. Prerrequisitos
-* Tener instalado **Node.js**.
-* Tener instalado **XAMPP** (o cualquier servidor MySQL).
-* Tener un cliente de API (Postman, Insomnia) para pruebas.
+| Tecnología | Descripción |
+| :--- | :--- |
+| **Node.js** | Entorno de ejecución. |
+| **TypeScript** | Superset tipado de JavaScript. |
+| **Express** | Framework de servidor web. |
+| **MySQL / MariaDB** | Base de datos relacional. |
+| **JWT (JsonWebToken)** | Seguridad y autenticación de sesiones. |
+| **Bcrypt.js** | Encriptado de contraseñas. |
 
-### 2. Instalación de dependencias
-Clona el repositorio y ejecuta:
+---
 
-```bash
+## ⚙️ Configuración e Instalación
+
+### 1. Variables de Entorno (.env)
+El proyecto requiere un archivo `.env` en la raíz para funcionar. Si no existe, créalo con la siguiente configuración estándar:
+
+```properties
+# Servidor
+PORT=3000
+
+# Base de Datos (Ajustar según tu XAMPP/MAMP)
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=proyecto_integrado
+DB_PORT=3306
+
+# Seguridad
+JWT_SECRET=tu_secreto_super_seguro_cambiar_esto
+SALT_ROUNDS=10
+2. Instalación de Dependencias
+Ejecuta el siguiente comando para descargar las librerías necesarias:
+
+Bash
 npm install
-3. Configuración de la Base de DatosEl sistema requiere una base de datos MySQL llamada proyecto_integrado.Abre tu gestor de base de datos (ej. phpMyAdmin).Crea una base de datos nueva llamada proyecto_integrado.Importa el archivo proyecto_integrado.sql que se encuentra en la raíz de este proyecto (o ejecuta el script SQL de creación de tablas).Asegúrate de que la configuración de conexión en tu código (normalmente en src/database.ts o .env) coincida con tus credenciales locales (usuario root, sin contraseña por defecto en XAMPP).4. Ejecutar el servidorPara iniciar el entorno de desarrollo:Bashnpm run dev
-El servidor escuchará por defecto en http://localhost:3000.🔐 Sistema de Usuarios y AutenticaciónEl sistema utiliza un modelo de seguridad basado en Roles y Tokens.Roles DisponiblesLos roles están definidos en la tabla rol de la base de datos:Administrador (A): Acceso total.Gestor (G): Puede gestionar proyectos y usuarios.Profesor (P): Gestión académica.Usuario (U): Acceso básico.⚠️ IMPORTANTE: Diferencia entre TokensPara evitar confusiones durante el desarrollo, distingue bien estos dos conceptos:JWT (Authorization Header):Es el token largo que empieza por eyJ....Se obtiene al hacer Login.Uso: Se debe enviar en los Headers de cada petición privada (Authorization: Bearer <token>) para tener permiso de entrada.UUID (User Token/ID):Es el identificador único del usuario en la BBDD (columna tokken). Ejemplo: a09e0645-d25a....Uso: Se utiliza en el Body (JSON) de las peticiones cuando necesitas identificar a un usuario específico (ej: asignar un usuario a un proyecto).👤 Credenciales de Acceso (Admin)Para la primera configuración y pruebas, utiliza el usuario Administrador pre-creado en la base de datos:CampoValorEmailadmin@test.comContraseña123456📡 Endpoints PrincipalesAquí tienes una lista rápida de las rutas más importantes para probar en Postman.AutenticaciónLoginObtiene el JWT de acceso.Método: POSTURL: /api/auth/loginBody:JSON{
+3. Base de Datos (MySQL)
+El sistema depende de la base de datos proyecto_integrado.
+
+Asegúrate de tener MySQL corriendo (XAMPP/WAMP).
+
+Crea la base de datos vacía: CREATE DATABASE proyecto_integrado;
+
+Importa el script proyecto_integrado.sql incluido en este repositorio.
+
+🔑 Credenciales y Accesos
+Super-Admin (Pre-instalado)
+Utiliza estas credenciales para el primer inicio de sesión y para crear al resto de usuarios.
+
+Email: admin@test.com
+
+Contraseña: 123456
+
+⚠️ Conceptos Críticos: TOKEN vs UUID
+Para evitar errores durante el desarrollo o pruebas en Postman, es vital distinguir los dos tipos de "tokens" que maneja el sistema:
+
+JWT (Access Token):
+
+Formato: eyJhbGciOiJIUzI1NiIsIn... (Cadena muy larga).
+
+Origen: Se obtiene al hacer /login.
+
+Uso: Se coloca en el HEADER (Authorization) de las peticiones. Es la "llave" para entrar.
+
+UUID (User ID):
+
+Formato: a09e0645-d25a-403c... (Cadena corta con guiones).
+
+Origen: Es la columna tokken en la base de datos usuario.
+
+Uso: Se coloca en el BODY (JSON) cuando quieres asignar o referenciar a un usuario específico (ej: asignar un gestor a un proyecto).
+
+📡 Documentación de Endpoints
+1. Autenticación (/api/auth)
+Iniciar Sesión
+Genera el JWT necesario para usar el resto de la API.
+
+Método: POST
+
+URL: /login
+
+Body:
+
+JSON
+{
   "email": "admin@test.com",
   "password": "123456"
 }
-UsuariosCrear Gestor (Requiere Auth Admin)Crea un nuevo usuario con rol de gestor.Método: POSTURL: /api/users/create (Ruta aproximada, verificar en router)Header: Authorization: <JWT del Admin>Body:JSON{
-  "userName": "Nuevo Gestor",
-  "email": "gestor@test.com",
+2. Gestión de Usuarios (/api/users o /api/admin)
+Crear Nuevo Usuario (Gestor/Profesor)
+Requiere ser Administrador.
+
+Método: POST
+
+Header: Authorization: <JWT_DEL_ADMIN>
+
+Body:
+
+JSON
+{
+  "userName": "Nombre Gestor",
+  "email": "gestor@empresa.com",
   "password": "123456",
-  "rolId": 2
+  "rolId": 2  
+  // 1:Admin, 2:Gestor, 3:Profesor, 4:Usuario
 }
-ProyectosCrear ProyectoMétodo: POSTURL: /api/projectsHeader: Authorization: <JWT>Body:JSON{
-  "nombreProyecto": "Proyecto Demo",
-  "descripcionProyecto": "Descripción del proyecto...",
-  "urlProyecto": "http://...",
-  "urlGitHub": "http://...",
-  "imgPortada": "imagen.jpg"
+Listar Todos los Usuarios
+Método: GET
+
+Header: Authorization: <JWT>
+
+3. Gestión de Proyectos (/api/projects)
+Crear Proyecto
+Método: POST
+
+Header: Authorization: <JWT>
+
+Body:
+
+JSON
+{
+  "nombreProyecto": "Web Corporativa",
+  "descripcionProyecto": "Desarrollo fullstack...",
+  "urlProyecto": "[https://miweb.com](https://miweb.com)",
+  "urlGitHub": "[https://github.com/repo](https://github.com/repo)",
+  "imgPortada": "url_imagen.jpg"
 }
-Asignar Usuario a ProyectoVincula un usuario existente a un proyecto.Método: POSTURL: /api/projects/assign (o ruta correspondiente)Header: Authorization: <JWT>Body:JSON{
+Asignar Usuario a Proyecto
+Vincula un usuario existente a un proyecto específico.
+
+Método: POST
+
+URL: /assign (o /add-user según router)
+
+Header: Authorization: <JWT>
+
+Body:
+
+JSON
+{
   "proyectoId": 1,
-  "userTokkenToAssign": "a09e0645-d25a..." // UUID del usuario (NO el JWT)
+  "userTokkenToAssign": "a09e0645-d25a-403c-91a6-33514f0bbf5" 
+  // NOTA: Aquí va el UUID del usuario, NO el JWT.
 }
-📂 Estructura de la Base de DatosLas tablas principales son:usuario: Contiene los datos de acceso y el UUID (tokken).rol: Define los permisos (Admin, Gestor, etc.).rol_usuario: Tabla intermedia para asignar roles a usuarios.proyecto: Almacena la info de los proyectos.usuario_proyecto: Relaciona usuarios con proyectos (N:M).
+Obtener Proyectos
+Método: GET
+
+URL: / (Lista todos o los propios, según rol)
+
+4. Centros Educativos (/api/centers)
+Crear Centro
+Método: POST
+
+Header: Authorization: <JWT>
+
+Body:
+
+JSON
+{
+  "nombreCentro": "IES Tecnológico",
+  "sufijoEmail": "@ies.com"
+}
+🐛 Solución de Problemas Frecuentes
+Error 1932: "Table doesn't exist in engine"
+Indica corrupción en los archivos de XAMPP/MySQL.
+
+Solución:
+
+Detener MySQL.
+
+Ir a C:\xampp\mysql\data\ y borrar la carpeta de la base de datos.
+
+Reiniciar MySQL y volver a importar el SQL.
+
+Error de "Password Incorrecta" tras importar
+Si el hash generado en otro PC no es compatible:
+
+Solución: Generar un nuevo hash ejecutando este script temporal en Node.js y actualizar la BBDD manualmente:
+
+JavaScript
+const bcrypt = require('bcryptjs');
+console.log(bcrypt.hashSync("123456", 10));
+Error: "Token Inválido" al crear recursos
+Causa: Estás enviando el UUID del usuario en el Header Authorization.
+
+Solución: En el Header Authorization siempre debe ir el token largo (eyJ...) que recibiste al hacer Login.
